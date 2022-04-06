@@ -1,0 +1,18 @@
+module Test where
+
+import Token_Test
+import Daml.Script
+
+-- daml damlc -- test --files Token_Test.daml
+
+
+token_test_2 = do
+
+  alice <- allocateParty "Alice"
+
+  submit alice do
+    createCmd Token with owner = alice
+
+  bob <- allocateParty "Bob"
+  submit bob do
+    createCmd Token with owner = bob
