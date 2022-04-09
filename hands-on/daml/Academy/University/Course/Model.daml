@@ -1,0 +1,13 @@
+module Academy.University.Course.Model where
+
+template Course
+  with
+    operator  : Party
+    provider  : Party
+    professor : Party
+    students  : [Party]
+    name      : Text
+  where
+    signatory operator, provider
+    observer professor, students
+    

@@ -1,0 +1,33 @@
+module Tests.Academy where
+
+import Daml.Script
+import Academy.Operator.Role qualified as OperatorRole
+import Academy.University.Role qualified as UniversityRole
+
+import Academy.University.Professor.Service qualified as ProfessorService
+import Academy.University.Student.Service qualified as StudentService
+
+setup : Script ()
+setup = script do
+
+  operator      <- allocatePartyWithHint "Operator" $ PartyIdHint "Operator"
+  university    <- allocatePartyWithHint "University" $ PartyIdHint "University"
+  professor     <- allocatePartyWithHint "Professor" $ PartyIdHint "Professor"
+  student1      <- allocatePartyWithHint "Student1" $ PartyIdHint "Student1"
+  student2      <- allocatePartyWithHint "Student2" $ PartyIdHint "Student2"
+  public        <- allocatePartyWithHint "Public" $ PartyIdHint "Public"
+
+  operatorRoleCid <- submit operator do createCmd OperatorRole.Role with observers = [public]; ..
+  --universityRoleCid <- submit university do createCmd UniversityRole.Role with operator; provider = university; observers = [public]; ..
+  universityRoleOfferCid <- submit operator do exerciseCmd operatorRoleCid OperatorRole.OfferUniversityRole with provider = university
+  universityRoleCid <- submit university do exerciseCmd universityRoleOfferCid UniversityRole.Accept
+
+  professorServiceOfferCid  <- submit university do exerciseCmd universityRoleCid UniversityRole.OfferProfessorService with customer = professor
+  professorServiceCid       <- submit professor do exerciseCmd professorServiceOfferCid ProfessorService.Accept
+
+  studentServiceOfferCid  <- submit university do exerciseCmd universityRoleCid UniversityRole.OfferStudentService with customer = student1
+  studentServiceCid       <- submit student1 do exerciseCmd studentServiceOfferCid StudentService.Accept
+
+  submit university do exerciseCmd universityRoleCid UniversityRole.CreateCourse with professor; students = [student1]; name = "Blockchain & DLT" 
+
+  pure ()

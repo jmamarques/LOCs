@@ -1,0 +1,41 @@
+module Academy.University.Professor.Service where
+
+template Service
+  with
+    operator : Party
+    provider : Party
+    customer : Party
+  where
+    signatory operator, provider, customer
+
+    key (operator, provider, customer) : (Party, Party, Party)
+    maintainer key._1
+
+    choice Terminate : ()
+      with
+        ctrl : Party
+      controller ctrl 
+        do
+          assertMsg 
+            ("ctrl " <> show ctrl <> "is not a party allowed to do this action")
+            (ctrl == provider || ctrl == customer)
+          return ()
+
+template Offer
+  with
+    operator : Party
+    provider : Party
+    customer : Party
+  where
+    signatory operator, provider
+    observer customer
+
+    choice Accept : ContractId Service      
+      controller customer
+        do
+          create Service with ..
+    
+    choice Decline : ()
+      controller customer
+        do
+          pure ()

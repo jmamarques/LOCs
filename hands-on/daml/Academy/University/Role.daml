@@ -1,0 +1,66 @@
+module Academy.University.Role where
+
+import Academy.University.Course.Model      qualified as CourseModel
+import Academy.University.Professor.Service qualified as ProfessorService
+import Academy.University.Student.Service   qualified as StudentService
+import DA.Optional
+import DA.List
+
+template Role
+  with
+    operator : Party
+    provider : Party
+    observers : [Party]
+  where
+    signatory operator, provider
+    observer observers
+
+    key (operator, provider) : (Party, Party)
+    maintainer key._1
+
+    nonconsuming choice OfferProfessorService : ContractId ProfessorService.Offer
+      with
+        customer : Party
+      controller provider
+        do
+          create ProfessorService.Offer with ..
+
+    nonconsuming choice OfferStudentService : ContractId StudentService.Offer
+      with
+        customer : Party
+      controller provider
+        do
+          create StudentService.Offer with ..
+
+    nonconsuming choice CreateCourse : ContractId CourseModel.Course 
+      with
+        professor : Party
+        students  : [Party]
+        name      : Text
+      controller provider
+        do
+          optionalProfessorServiceId <- lookupByKey @ProfessorService.Service (operator, provider, professor)
+          assert (isSome optionalProfessorServiceId)
+          --
+          optionalStudentServiceIds <- mapA (\student -> lookupByKey @StudentService.Service (operator, provider, student)) students
+          assert (isNone $ elemIndex None optionalStudentServiceIds)
+          --
+          create CourseModel.Course with ..
+
+template Offer
+  with
+    operator : Party
+    provider : Party
+    observers : [Party]
+  where
+    signatory operator
+    observer provider
+
+    choice Accept : ContractId Role
+      controller provider
+        do
+          create Role with operator; provider; observers
+    choice Decline : ()
+      controller provider
+        do
+          return ()

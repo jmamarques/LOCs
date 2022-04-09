@@ -1,0 +1,22 @@
+module Academy.Operator.Role where
+
+import Academy.University.Role qualified as UniversityRole
+
+template Role
+  with
+    operator : Party
+    observers : [Party]
+  where
+    signatory operator
+    observer observers
+
+    key operator : Party
+    maintainer key
+
+    nonconsuming choice OfferUniversityRole : ContractId UniversityRole.Offer
+      with
+        provider : Party
+      controller operator
+        do
+          create UniversityRole.Offer with operator; provider; observers
+            
