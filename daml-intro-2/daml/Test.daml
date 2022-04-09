@@ -16,3 +16,30 @@ token_test_2 = do
   bob <- allocateParty "Bob"
   submit bob do
     createCmd Token with owner = bob
+
+failing_test_1 = do
+  alice <- allocateParty "Alice"
+  bob <- allocateParty "Bob"
+  submitMustFail alice do
+    createCmd Token with owner = bob
+  submitMustFail bob do
+    createCmd Token with owner = alice
+
+token_test_3 = do
+  alice <- allocateParty "Alice"
+  bob <- allocateParty "Bob"
+
+  alice_token <- submit alice do
+    createCmd Token with owner = alice
+
+  submitMustFail bob do
+    archiveCmd alice_token
+
+  submit alice do
+    archiveCmd alice_token
+  
+  bob_token <- submit bob do
+    createCmd Token with owner = bob
+  submit bob do
+    archiveCmd bob_token
+  
