@@ -1,0 +1,61 @@
+module SimpleIou where
+
+import DA.Text as T
+import Daml.Script
+
+data Cash = Cash with
+  currency : Text
+  amount : Decimal
+    deriving (Eq, Show)
+
+template SimpleIou
+  with
+    issuer : Party
+    owner : Party
+    cash : Cash
+  where
+    signatory issuer
+    observer owner
+
+    ensure cash.amount > 0.0
+        && T.length cash.currency == 3
+        && T.isUpper cash.currency
+
+test_simpleIou = do
+  joao <- allocateParty "Joao"
+  pedro <- allocateParty "Pedro"
+
+  let
+        invalid_cash = Cash with
+            amount = -100.0
+            currency = "EUR"
+    
+        valid_cash = Cash with
+            amount = 39.0
+            currency = "EUR"
+
+        invalid_cash_2 = Cash with
+            amount = 10.0
+            currency = "NOTEXIST"
+
+  submitMustFail joao do
+        createCmd SimpleIou with
+            issuer = joao
+            owner = pedro
+            cash = invalid_cash
+
+  iouCid <- submit joao do 
+        createCmd SimpleIou with
+            issuer = joao
+            owner = pedro
+            cash = valid_cash
+
+  submitMustFail joao do
+        createCmd SimpleIou with
+            issuer = joao
+            owner = pedro
+            cash = invalid_cash_2
+    
+  Some iou <- queryContractId joao iouCid 
+
+  assert (iou.cash.amount == 39.0)
