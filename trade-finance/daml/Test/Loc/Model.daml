@@ -1,0 +1,48 @@
+module Test.Loc.Model where
+
+import Daml.Script
+
+import Loc.Model as P
+
+test_Model = do
+  marques <- allocateParty "Marques"
+  wolf <- allocateParty "Wolf"
+  grilo <- allocateParty "Grilo"
+  let 
+    item = "bois"
+  --
+  submitMustFail marques do
+    createCmd P.Product with
+      issuer = marques
+      owner = wolf
+      item = item
+      price = Cash with
+        amount = -1.0
+        currency = "USD"
+  --
+  submitMustFail marques do
+    createCmd P.Product with
+      issuer = marques
+      item = item
+      owner = wolf
+      price = Cash with
+        amount = 0.0
+        currency = "USD"
+  --
+  submitMustFail marques do
+    createCmd P.Product with
+      issuer = marques
+      owner = wolf
+      item = item
+      price = Cash with
+        amount = 10.0
+        currency = "USDT"
+  --
+  submit marques do
+    createCmd P.Product with
+      issuer = marques
+      owner = wolf
+      item = item
+      price = Cash with
+        amount = 10.0
+        currency = "USD"

@@ -1,0 +1,24 @@
+module Loc.Model where
+
+import DA.Text as T
+
+data Cash = Cash with
+  currency : Text
+  amount : Decimal
+    deriving (Eq, Show)
+
+template Product
+  with
+    issuer : Party
+    owner : Party
+    price : Cash
+    item : Text
+  where
+    signatory issuer
+    observer owner
+
+    ensure price.amount > 0.0
+        && T.length price.currency == 3
+        && T.isUpper price.currency
+        && item /= ""
+

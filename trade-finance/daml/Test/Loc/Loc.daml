@@ -1,0 +1,10 @@
+module Test.Loc.Loc where
+
+import Daml.Script
+import Loc.Loc as L
+
+test_loc = do
+    allocateParty "joao"
+    allocateParty "maria"
+    allocateParty "francisco"
+

@@ -1,0 +1,37 @@
+module Loc.Applicant where
+
+import Loc.Model as P
+
+-- Applicant
+template Applicant
+  with
+    issuer: Party
+  where
+    signatory issuer
+
+    nonconsuming choice Buy : ContractId Proposal
+      with 
+        owner: Party
+        product: ContractId Product
+      controller issuer
+      do create Proposal
+            with productAgreement = Agreement with issuer; owner; product
+-- Proposal
+template Proposal
+  with
+    productAgreement: Agreement
+  where
+    signatory productAgreement.issuer
+    observer productAgreement.owner
+
+    choice Contract: ContractId Agreement
+      controller productAgreement.owner
+      do create productAgreement
+-- Agreement
+template Agreement
+  with
+    issuer: Party
+    owner: Party
+    product: ContractId Product
+  where
+    signatory issuer, owner

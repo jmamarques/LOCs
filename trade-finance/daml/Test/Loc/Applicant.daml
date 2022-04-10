@@ -1,0 +1,42 @@
+module Test.Loc.Applicant where
+
+import Daml.Script
+import Loc.Applicant as A
+import Loc.Model as P
+
+test_applicant = do
+    marques <- allocateParty "Marques"
+    wolf <- allocateParty "Wolf"
+    grilo <- allocateParty "Grilo"
+    -- marques quer comprar bois ao grilo
+    productCid <- submit marques do 
+        createCmd P.Product with
+                    issuer = marques
+                    owner = grilo
+                    item = "BOI"
+                    price = Cash with
+                            currency = "EUR"
+                            amount = 1000.0
+    -- inicia pedido para comprar
+    applicant <- submit marques do 
+        createCmd A.Applicant with
+            issuer = marques
+    -- informa grilo dessa intenção de compra
+    proposalCid <- submit marques do 
+        exerciseCmd applicant Buy 
+            with owner = grilo
+                 product = productCid
+
+    -- grilo aceita negociar   
+    submit grilo do exerciseCmd proposalCid Contract
+    
+    
+    
+            
+    
+
+
+
+
+
+
