@@ -1,0 +1,23 @@
+module Test.Loc.Accountant where
+
+import Loc.Accountant
+import Daml.Script
+
+cash_balance_test = do
+  marques_owner <- allocateParty "Marques"
+  grilo_owner <- allocateParty "Grilo"
+  bank_party <- allocateParty "Caixa Geral de Depositos"
+  let
+    bank = Bank with
+      party = bank_party
+      address = "Avenida da Liberdade"
+      
+
+  submit marques_owner do
+    createCmd Account with
+      owner = marques_owner
+      bank
+      number = "PT50155825912812112342342342332234"
+
+  
+

@@ -2,12 +2,20 @@ module Test.Loc.Applicant where
 
 import Daml.Script
 import Loc.Applicant as A
+import Loc.Accountant
 import Loc.Model as P
 
 test_applicant = do
     marques <- allocateParty "Marques"
     wolf <- allocateParty "Wolf"
     grilo <- allocateParty "Grilo"
+    caixa <- allocateParty "Caixa Geral de Depositos"
+    
+    let
+      caixa_bank = Bank with
+        party = caixa
+        address = "Avenida da Liberdade"
+
     -- marques quer comprar bois ao grilo
     productCid <- submit marques do 
         createCmd P.Product with
@@ -28,15 +36,26 @@ test_applicant = do
                  product = productCid
 
     -- grilo aceita negociar   
-    submit grilo do exerciseCmd proposalCid Contract
-    
-    
-    
-            
-    
-
-
-
-
-
-
+    agreementCid <- submit grilo do exerciseCmd proposalCid Contract
+    -- grilo diz iban para a transferia
+    grilo_accountCid <-submit grilo do 
+                createCmd Account 
+                    with
+                        owner = grilo
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332234"
+    Some grilo_account <- queryContractId grilo grilo_accountCid  
+    preparationCid <- submit grilo do 
+        exerciseCmd agreementCid Preparation 
+                    with account = grilo_account
+    -- marques diz iban para a transferencia
+    marques_accountCid <-submit marques do 
+                createCmd Account 
+                    with
+                        owner = marques
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332211"
+    Some marques_account <- queryContractId marques marques_accountCid  
+    submit marques do 
+        exerciseCmd preparationCid Approach 
+                    with account = marques_account

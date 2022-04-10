@@ -1,6 +1,11 @@
 module Loc.Applicant where
 
 import Loc.Model as P
+import Loc.Accountant as A
+
+type PreparationSaleId = ContractId PreparationSale
+type SaleId = ContractId Sale
+type AgreementId = ContractId Agreement
 
 -- Applicant
 template Applicant
@@ -35,3 +40,44 @@ template Agreement
     product: ContractId Product
   where
     signatory issuer, owner
+    
+    nonconsuming choice Preparation : PreparationSaleId
+      with account: Account
+      controller owner 
+      do create PreparationSale 
+          with 
+              issuer
+              owner = account
+              product
+              contract = this
+
+-- Sales
+-- Preparation
+template PreparationSale
+  with
+    issuer: Party
+    owner: Account
+    product: ContractId Product
+    contract: Agreement
+  where
+    signatory owner.owner
+    observer issuer
+
+    nonconsuming choice Approach : SaleId
+      with account: Account
+      controller issuer
+      do create Sale 
+          with 
+              issuer = account
+              owner
+              product
+              contract
+-- Sale
+template Sale
+  with 
+    issuer : Account
+    owner  : Account
+    product: ContractId Product
+    contract: Agreement
+  where
+    signatory issuer.owner, owner.owner    

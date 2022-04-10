@@ -1,5 +1,17 @@
 module Loc.Loc where
 
 import Loc.Model as P
+import Loc.Applicant as A
+import Loc.Accountant
+
+data Loc = Loc
+    with 
+        sale                     : SaleId
+        bankIssuerLevel1Approver : Party
+        bankOwnerLevel2Approver  : Party
+        shipLevel3Approver       : Party
+        bankIssuerLevel4Approver : Party
+        bankOwnerLevel5Approver  : Party
+    deriving (Eq, Show)
 
     

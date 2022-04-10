@@ -1,44 +1,102 @@
 module Main where
 
 import Daml.Script
+import Loc.Applicant as A
+import Loc.Model as P
+import Loc.Accountant as Accountant
 
-type AssetId = ContractId Asset
+test_applicant = do
+    -- Parties
+    marques <- allocateParty "Marques"
+    grilo <- allocateParty "Grilo"
+    caixa <- allocateParty "Caixa Geral de Depositos"
+    
+    let
+      caixa_bank = Bank with
+        party = caixa
+        address = "Avenida da Liberdade"
 
-template Asset
-  with
-    issuer : Party
-    owner  : Party
-    name   : Text
-  where
-    ensure name /= ""
-    signatory issuer
-    observer owner
-    choice Give : AssetId
-      with
-        newOwner : Party
-      controller owner
-      do create this with
-           owner = newOwner
+    -- Use Case
+    -- marques quer comprar bois ao grilo
+    {-
+        ################### 1. Sales Contract agreement ###################
+    -}
+    -- marques quer comprar bois ao grilo por 1000 Euros
+    productCid <- submit marques do 
+        createCmd P.Product with
+                    issuer = marques
+                    owner = grilo
+                    item = "BOI"
+                    price = Cash with
+                            currency = "EUR"
+                            amount = 1000.0
 
-setup : Script AssetId
-setup = script do
--- user_setup_begin
-  alice <- allocatePartyWithHint "Alice" (PartyIdHint "Alice")
-  bob <- allocatePartyWithHint "Bob" (PartyIdHint "Bob")
-  aliceId <- validateUserId "alice"
-  bobId <- validateUserId "bob"
-  createUser (User aliceId (Some alice)) [CanActAs alice]
-  createUser (User bobId (Some bob)) [CanActAs bob]
--- user_setup_end
+    -- marques inicia pedido para comprar
+    applicant <- submit marques do 
+        createCmd A.Applicant with
+            issuer = marques
 
-  aliceTV <- submit alice do
-    createCmd Asset with
-      issuer = alice
-      owner = alice
-      name = "TV"
+    -- marques informa grilo dessa intenção de compra
+    proposalCid <- submit marques do 
+        exerciseCmd applicant Buy 
+            with owner = grilo
+                 product = productCid
 
-  bobTV <- submit alice do
-    exerciseCmd aliceTV Give with newOwner = bob
+    -- grilo aceita negociar   
+    agreementCid <- submit grilo do exerciseCmd proposalCid Contract
 
-  submit bob do
-    exerciseCmd bobTV Give with newOwner = alice
+    -- grilo diz iban para a transferia
+    grilo_accountCid <-submit grilo do 
+                createCmd Account 
+                    with
+                        owner = grilo
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332234"
+    Some grilo_account <- queryContractId grilo grilo_accountCid  
+    preparationCid <- submit grilo do 
+        exerciseCmd agreementCid Preparation 
+                    with account = grilo_account
+    -- marques diz iban para a transferencia
+    marques_accountCid <-submit marques do 
+                createCmd Account 
+                    with
+                        owner = marques
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332211"
+    Some marques_account <- queryContractId marques marques_accountCid  
+    -- compra formalizada
+    submit marques do 
+        exerciseCmd preparationCid Approach 
+                    with account = marques_account
+    {-
+        ################### 2. Apply for LC ###################
+    -}
+
+    {-
+        ################### 3. Issue LC ###################
+    -}
+
+    {-
+        ################### 4. Verifies LC and forwards it to Beneficiary ###################
+    -}
+
+    {-
+        ################### 5. Goods shipped ###################
+    -}
+
+    {-
+        ################### 6. Documents submitted per contract ###################
+    -}
+
+    {-
+        ################### 7.  ###################
+    -}
+
+    {-
+        ################### 8. Payment Released ###################
+    -}
+
+    {-
+        ################### 9. Release Documents ###################
+    -}
+

@@ -2,6 +2,8 @@ module Loc.Model where
 
 import DA.Text as T
 
+type ProductId = ContractId Product
+
 data Cash = Cash with
   currency : Text
   amount : Decimal

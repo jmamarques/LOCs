@@ -1,0 +1,32 @@
+module Loc.Accountant where
+
+import DA.Text as T
+
+data Bank = Bank with
+  party  : Party
+  address: Text
+    deriving (Eq, Show)
+
+template Account 
+    with
+        owner  : Party
+        number : Text
+        bank   : Bank
+    where
+        signatory owner
+
+        key (owner) : (Party)
+        maintainer key
+        
+        ensure T.length number == 34
+            && bank.address /= ""
+            && bank.party /= owner
+
+        choice Terminate : ()
+            with ctrl : Party
+            controller ctrl 
+                do
+                assertMsg 
+                    ("ctrl " <> show ctrl <> "is not a party allowed to do this action")
+                    (ctrl == bank.party)
+                return ()
