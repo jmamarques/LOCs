@@ -35,7 +35,6 @@ template Proposed
         && content.bankOwnerLevel3Approver == content.bankOwnerLevel7Approver
 
     choice Level1Approve : Level1ApprovedId
-        with loc: Loc
         controller content.issuerLevel1Approver
         do  
             -- confirm if all levels belong to approved entities
@@ -52,12 +51,11 @@ template Proposed
             -- contract constraint
             assertMsg "Contract Owner constraint" (sale.contract.owner == content.ownerLevel4Approver)
             assertMsg "Contract Issuer constraint" (sale.contract.issuer == content.issuerLevel1Approver)
-            assertMsg "LOC is the same as you approve" (loc == content)
             -- Shipper constraint
             assertMsg "Shipper constraint" (sale.shipper == content.shipLevel5Approver)
 
             create Level1Approved 
-                with content = loc
+                with content
 -- issuer Aprove content on Loc -> Emits Loc for own bank
 -- Issuer aprove
 template Level1Approved
@@ -91,29 +89,55 @@ template Level3Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver
+    choice Level4Approve : Level4ApprovedId
+        with loc: Loc
+        controller content.ownerLevel4Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create Level4Approved 
+                with content = loc
 -- Owner approve
 template Level4Approved
   with
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver
+    choice Level5Approve : Level5ApprovedId
+        with loc: Loc
+        controller content.shipLevel5Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create Level5Approved 
+                with content = loc
 -- Ship approve
 template Level5Approved
   with
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver
+    choice Level6Approve : Level6ApprovedId
+        with loc: Loc
+        controller content.bankIssuerLevel6Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create Level6Approved 
+                with content = loc
 -- Bank Owner approve 2nd
 template Level6Approved
   with
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver
+    choice FullyApprove : FullyApprovedId
+        with loc: Loc
+        controller content.bankOwnerLevel7Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create FullyApproved 
+                with content = loc
 -- Bank Issuer approve 2nd -> Consensus for each level
 template FullyApproved
   with
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver, content.bankOwnerLevel7Approver
-
-

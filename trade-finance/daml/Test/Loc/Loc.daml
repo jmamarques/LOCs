@@ -4,7 +4,7 @@ import Daml.Script
 import Loc.Applicant as A
 import Loc.Model as P
 import Loc.Accountant as Accountant
-import Loc.Loc
+import Loc.Loc as L
 
 test_loc = do
     marques <- allocateParty "Marques"
@@ -71,3 +71,12 @@ test_loc = do
             bankOwnerLevel7Approver  = caixa_bank.party
 
     assert(loc.issuerLevel1Approver == marques)
+
+    -- marques vai criar uma nota de credito (loc) para o seu banco
+    proposed <- submit marques do createCmd Proposed with content = loc
+    -- marques valida a sua intecao
+    submit marques do exerciseCmd proposed Level1Approve
+    {- marques_confirmation  <- submit marques do exerciseCmd proposed Level1Approve
+    bank_issuer_confirmation <- submit caixa do exerciseCmd marques_confirmation Level2Approve with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_con firmation Level3Approve with loc-}
+    
