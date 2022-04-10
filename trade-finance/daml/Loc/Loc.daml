@@ -2,7 +2,4 @@ module Loc.Loc where
 
 import Loc.Model as P
 
-template Loc 
-    with
-        product: P.Product
     
