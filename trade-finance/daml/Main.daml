@@ -10,6 +10,7 @@ test_applicant = do
     marques <- allocateParty "Marques"
     grilo <- allocateParty "Grilo"
     caixa <- allocateParty "Caixa Geral de Depositos"
+    shipper <- allocateParty "CTT"
     
     let
       caixa_bank = Bank with
@@ -56,6 +57,7 @@ test_applicant = do
     preparationCid <- submit grilo do 
         exerciseCmd agreementCid Preparation 
                     with account = grilo_account
+                         shipper
     -- marques diz iban para a transferencia
     marques_accountCid <-submit marques do 
                 createCmd Account 
@@ -71,7 +73,7 @@ test_applicant = do
     {-
         ################### 2. Apply for LC ###################
     -}
-
+    
     {-
         ################### 3. Issue LC ###################
     -}

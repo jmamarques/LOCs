@@ -2,16 +2,118 @@ module Loc.Loc where
 
 import Loc.Model as P
 import Loc.Applicant as A
-import Loc.Accountant
+import Loc.Accountant 
+
+type Level1ApprovedId = ContractId Level1Approved
+type Level2ApprovedId = ContractId Level2Approved
+type Level3ApprovedId = ContractId Level3Approved
+type Level4ApprovedId = ContractId Level4Approved
+type Level5ApprovedId = ContractId Level5Approved
+type Level6ApprovedId = ContractId Level6Approved
+type FullyApprovedId  = ContractId FullyApproved
+
 
 data Loc = Loc
     with 
         sale                     : SaleId
-        bankIssuerLevel1Approver : Party
-        bankOwnerLevel2Approver  : Party
-        shipLevel3Approver       : Party
-        bankIssuerLevel4Approver : Party
-        bankOwnerLevel5Approver  : Party
+        issuerLevel1Approver     : Party
+        bankIssuerLevel2Approver : Party
+        bankOwnerLevel3Approver  : Party
+        ownerLevel4Approver      : Party
+        shipLevel5Approver       : Party
+        bankIssuerLevel6Approver : Party
+        bankOwnerLevel7Approver  : Party
     deriving (Eq, Show)
+-- Proposed created by issuer
+template Proposed
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver
 
-    
+    ensure content.bankIssuerLevel6Approver == content.bankIssuerLevel2Approver
+        && content.bankOwnerLevel3Approver == content.bankOwnerLevel7Approver
+
+    choice Level1Approve : Level1ApprovedId
+        with loc: Loc
+        controller content.issuerLevel1Approver
+        do  
+            -- confirm if all levels belong to approved entities
+            sale <- fetch content.sale
+            assertMsg "Issuer constraint" (sale.issuer.owner == content.issuerLevel1Approver)
+            assertMsg "Owner constraint" (sale.owner.owner == content.ownerLevel4Approver)
+            -- Bank constraint
+            assertMsg "Bank Owner constraint" (sale.owner.bank.party == content.bankOwnerLevel3Approver)
+            assertMsg "Bank Issuer constraint" (sale.issuer.bank.party == content.bankIssuerLevel2Approver)
+            -- Product constraint
+            product <- fetch sale.product
+            assertMsg "Product Owner constraint" (product.owner == content.ownerLevel4Approver)
+            assertMsg "Product Issuer constraint" (product.issuer == content.issuerLevel1Approver)
+            -- contract constraint
+            assertMsg "Contract Owner constraint" (sale.contract.owner == content.ownerLevel4Approver)
+            assertMsg "Contract Issuer constraint" (sale.contract.issuer == content.issuerLevel1Approver)
+            assertMsg "LOC is the same as you approve" (loc == content)
+            -- Shipper constraint
+            assertMsg "Shipper constraint" (sale.shipper == content.shipLevel5Approver)
+
+            create Level1Approved 
+                with content = loc
+-- issuer Aprove content on Loc -> Emits Loc for own bank
+-- Issuer aprove
+template Level1Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver
+    choice Level2Approve : Level2ApprovedId
+        with loc: Loc
+        controller content.bankIssuerLevel2Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create Level2Approved 
+                with content = loc
+-- Bank Issuer approve
+template Level2Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver
+    choice Level3Approve : Level3ApprovedId
+        with loc: Loc
+        controller content.bankOwnerLevel3Approver
+        do  
+            assertMsg "LOC is the same as you approve" (loc == content)
+            create Level3Approved 
+                with content = loc
+-- Bank Owner approve
+template Level3Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver
+-- Owner approve
+template Level4Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver
+-- Ship approve
+template Level5Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver
+-- Bank Owner approve 2nd
+template Level6Approved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver
+-- Bank Issuer approve 2nd -> Consensus for each level
+template FullyApproved
+  with
+    content : Loc
+  where
+    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver, content.bankOwnerLevel7Approver
+
+

@@ -43,6 +43,7 @@ template Agreement
     
     nonconsuming choice Preparation : PreparationSaleId
       with account: Account
+           shipper: Party
       controller owner 
       do create PreparationSale 
           with 
@@ -50,6 +51,8 @@ template Agreement
               owner = account
               product
               contract = this
+              shipper
+              
 
 -- Sales
 -- Preparation
@@ -59,6 +62,7 @@ template PreparationSale
     owner: Account
     product: ContractId Product
     contract: Agreement
+    shipper: Party
   where
     signatory owner.owner
     observer issuer
@@ -72,12 +76,14 @@ template PreparationSale
               owner
               product
               contract
+              shipper
 -- Sale
 template Sale
   with 
-    issuer : Account
-    owner  : Account
-    product: ContractId Product
+    issuer  : Account
+    owner   : Account
+    product : ContractId Product
     contract: Agreement
+    shipper : Party
   where
-    signatory issuer.owner, owner.owner    
+    signatory issuer.owner, owner.owner
