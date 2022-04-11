@@ -87,3 +87,4 @@ template Sale
     shipper : Party
   where
     signatory issuer.owner, owner.owner
+    observer issuer.bank.party, owner.bank.party

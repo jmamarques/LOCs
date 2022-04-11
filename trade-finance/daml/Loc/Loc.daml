@@ -1,8 +1,6 @@
 module Loc.Loc where
 
-import Loc.Model as P
 import Loc.Applicant as A
-import Loc.Accountant 
 
 type Level1ApprovedId = ContractId Level1Approved
 type Level2ApprovedId = ContractId Level2Approved
@@ -11,8 +9,29 @@ type Level4ApprovedId = ContractId Level4Approved
 type Level5ApprovedId = ContractId Level5Approved
 type Level6ApprovedId = ContractId Level6Approved
 type FullyApprovedId  = ContractId FullyApproved
-
-
+type RevokeId         = ContractId Revoke
+-- rule
+data Rule = Rule
+  with
+    condition: Text
+    description: Text
+  deriving (Eq, Show)
+-- Revoke
+template Revoke
+  with
+    owner: Party
+    reason: Text
+    observers : [Party]
+  where
+    signatory owner
+    observer observers
+    ensure reason /= ""
+    --
+    choice Disclose : RevokeId
+        with users : [Party]
+      controller owner
+        do create this with observers = users
+-- loc
 data Loc = Loc
     with 
         sale                     : SaleId
@@ -29,7 +48,7 @@ template Proposed
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver
+    signatory content.issuerLevel1Approver 
 
     ensure content.bankIssuerLevel6Approver == content.bankIssuerLevel2Approver
         && content.bankOwnerLevel3Approver == content.bankOwnerLevel7Approver
@@ -56,6 +75,17 @@ template Proposed
 
             create Level1Approved 
                 with content
+    choice Declined : RevokeId
+      with reason: Text
+      controller content.issuerLevel1Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.issuerLevel1Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
+            
 -- issuer Aprove content on Loc -> Emits Loc for own bank
 -- Issuer aprove
 template Level1Approved
@@ -63,6 +93,7 @@ template Level1Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver
+    observer content.bankIssuerLevel2Approver
     choice Level2Approve : Level2ApprovedId
         with loc: Loc
         controller content.bankIssuerLevel2Approver
@@ -76,6 +107,7 @@ template Level2Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver
+    observer content.bankOwnerLevel3Approver
     choice Level3Approve : Level3ApprovedId
         with loc: Loc
         controller content.bankOwnerLevel3Approver
@@ -89,6 +121,7 @@ template Level3Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver
+    observer content.ownerLevel4Approver
     choice Level4Approve : Level4ApprovedId
         with loc: Loc
         controller content.ownerLevel4Approver
@@ -102,6 +135,7 @@ template Level4Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver
+    observer content.shipLevel5Approver
     choice Level5Approve : Level5ApprovedId
         with loc: Loc
         controller content.shipLevel5Approver
@@ -115,6 +149,7 @@ template Level5Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver
+    observer content.bankIssuerLevel6Approver
     choice Level6Approve : Level6ApprovedId
         with loc: Loc
         controller content.bankIssuerLevel6Approver
@@ -128,6 +163,7 @@ template Level6Approved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver
+    observer content.bankOwnerLevel7Approver
     choice FullyApprove : FullyApprovedId
         with loc: Loc
         controller content.bankOwnerLevel7Approver

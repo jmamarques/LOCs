@@ -17,7 +17,7 @@ template Product
     item : Text
   where
     signatory issuer
-    observer owner
+    observer [owner]
 
     ensure price.amount > 0.0
         && T.length price.currency == 3
