@@ -41,7 +41,7 @@ template Agreement
   where
     signatory issuer, owner
     
-    nonconsuming choice Preparation : PreparationSaleId
+    choice Preparation : PreparationSaleId
       with account: Account
            shipper: Party
       controller owner 
@@ -67,7 +67,7 @@ template PreparationSale
     signatory owner.owner
     observer issuer
 
-    nonconsuming choice Approach : SaleId
+    choice Approach : SaleId
       with account: Account
       controller issuer
       do create Sale 

@@ -35,6 +35,7 @@ template Revoke
 data Loc = Loc
     with 
         sale                     : SaleId
+        rules                    : [Rule]
         issuerLevel1Approver     : Party
         bankIssuerLevel2Approver : Party
         bankOwnerLevel3Approver  : Party
@@ -101,6 +102,16 @@ template Level1Approved
             assertMsg "LOC is the same as you approve" (loc == content)
             create Level2Approved 
                 with content = loc
+    choice DeclinedLevel1 : RevokeId
+      with reason: Text
+      controller content.bankIssuerLevel2Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.bankIssuerLevel2Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Issuer approve
 template Level2Approved
   with
@@ -115,6 +126,16 @@ template Level2Approved
             assertMsg "LOC is the same as you approve" (loc == content)
             create Level3Approved 
                 with content = loc
+    choice DeclinedLevel2 : RevokeId
+      with reason: Text
+      controller content.bankOwnerLevel3Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.bankOwnerLevel3Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Owner approve
 template Level3Approved
   with
@@ -129,6 +150,16 @@ template Level3Approved
             assertMsg "LOC is the same as you approve" (loc == content)
             create Level4Approved 
                 with content = loc
+    choice DeclinedLevel3 : RevokeId
+      with reason: Text
+      controller content.ownerLevel4Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.ownerLevel4Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Owner approve
 template Level4Approved
   with
@@ -143,6 +174,16 @@ template Level4Approved
             assertMsg "LOC is the same as you approve" (loc == content)
             create Level5Approved 
                 with content = loc
+    choice DeclinedLevel4 : RevokeId
+      with reason: Text
+      controller content.shipLevel5Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.shipLevel5Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner, content.shipLevel5Approver]
 -- Ship approve
 template Level5Approved
   with
@@ -157,6 +198,16 @@ template Level5Approved
             assertMsg "LOC is the same as you approve" (loc == content)
             create Level6Approved 
                 with content = loc
+    choice DeclinedLevel5 : RevokeId
+      with reason: Text
+      controller content.bankIssuerLevel6Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.bankIssuerLevel6Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Owner approve 2nd
 template Level6Approved
   with
@@ -169,11 +220,26 @@ template Level6Approved
         controller content.bankOwnerLevel7Approver
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
+            archive loc.sale
             create FullyApproved 
                 with content = loc
+    choice DeclinedLevel6 : RevokeId
+      with reason: Text
+      controller content.bankOwnerLevel7Approver
+      do 
+        sale <- fetch content.sale
+        create Revoke 
+          with
+            reason
+            owner = content.bankOwnerLevel7Approver
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Issuer approve 2nd -> Consensus for each level
 template FullyApproved
   with
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver, content.bankOwnerLevel7Approver
+    choice EndLoc : ()
+      controller content.issuerLevel1Approver
+      do
+        return ()

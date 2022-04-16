@@ -62,6 +62,13 @@ test_loc = do
     let 
         loc = Loc with
             sale
+            rules = [Rule with 
+                            condition = "50% no inicio"
+                            description = "Dar 50% do dinheiro para começar a fazer o envio dos bois"
+                     , Rule with 
+                            condition = "Restante 50% apenas na chegada"
+                            description = "Apenas é pago o montate restante na chegada dos bois"
+                    ]
             issuerLevel1Approver     = marques
             bankIssuerLevel2Approver = caixa_bank.party
             bankOwnerLevel3Approver  = caixa_bank.party
@@ -85,3 +92,78 @@ test_loc = do
     assert(loc.issuerLevel1Approver == marques)
 
     
+test_loc_2 = do 
+    marques <- allocateParty "Marques"
+    grilo <- allocateParty "Grilo"
+    caixa <- allocateParty "Caixa Geral de Depositos"
+    shipper <- allocateParty "CTT"
+    
+    let
+      caixa_bank = Bank with
+        party = caixa
+        address = "Avenida da Liberdade"
+    productCid <- submit marques do 
+        createCmd P.Product with
+                    issuer = marques
+                    owner = grilo
+                    item = "BOI"
+                    price = Cash with
+                            currency = "EUR"
+                            amount = 1000.0
+
+    applicant <- submit marques do 
+        createCmd A.Applicant with
+            issuer = marques
+
+    proposalCid <- submit marques do 
+        exerciseCmd applicant Buy 
+            with owner = grilo
+                 product = productCid
+
+    agreementCid <- submit grilo do exerciseCmd proposalCid Contract
+
+    grilo_accountCid <-submit grilo do 
+                createCmd Account 
+                    with
+                        owner = grilo
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332234"
+    Some grilo_account <- queryContractId grilo grilo_accountCid  
+    preparationCid <- submit grilo do 
+        exerciseCmd agreementCid Preparation 
+                    with account = grilo_account
+                         shipper
+    marques_accountCid <-submit marques do 
+                createCmd Account 
+                    with
+                        owner = marques
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332211"
+    Some marques_account <- queryContractId marques marques_accountCid  
+    sale <- submit marques do 
+        exerciseCmd preparationCid Approach 
+                    with account = marques_account
+    -- Loc test
+
+    let 
+        loc = Loc with
+            sale
+            rules = [Rule with 
+                            condition = "50% no inicio"
+                            description = "Dar 50% do dinheiro para começar a fazer o envio dos bois"
+                     , Rule with 
+                            condition = "Restante 50% apenas na chegada"
+                            description = "Apenas é pago o montate restante na chegada dos bois"
+                    ]
+            issuerLevel1Approver     = marques
+            bankIssuerLevel2Approver = caixa_bank.party
+            bankOwnerLevel3Approver  = caixa_bank.party
+            ownerLevel4Approver      = grilo
+            shipLevel5Approver       = shipper
+            bankIssuerLevel6Approver = caixa_bank.party
+            bankOwnerLevel7Approver  = caixa_bank.party
+            
+    proposed2 <- submit marques do createCmd Proposed with content = loc
+    marques_revoke  <- submit marques do exerciseCmd proposed2 Declined with reason = "bad idea"
+    Some revoke <- queryContractId marques marques_revoke 
+    assert(revoke.reason == "bad idea")
