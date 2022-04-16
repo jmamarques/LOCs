@@ -90,6 +90,8 @@ test_loc = do
     bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation Level6Approve with loc
     bank_issuer_confirmation <- submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
     assert(loc.issuerLevel1Approver == marques)
+    -- marques termina loc
+    submit marques do exerciseCmd bank_issuer_confirmation EndLoc
 
     
 test_loc_2 = do 
@@ -162,7 +164,7 @@ test_loc_2 = do
             shipLevel5Approver       = shipper
             bankIssuerLevel6Approver = caixa_bank.party
             bankOwnerLevel7Approver  = caixa_bank.party
-            
+
     proposed2 <- submit marques do createCmd Proposed with content = loc
     marques_revoke  <- submit marques do exerciseCmd proposed2 Declined with reason = "bad idea"
     Some revoke <- queryContractId marques marques_revoke 
