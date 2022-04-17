@@ -35,6 +35,7 @@ template Revoke
 data Loc = Loc
     with 
         sale                     : SaleId
+        -- Aonde colocar as rules? nivel do loc ou a nivel do agreement entre comprador e vendedor?
         rules                    : [Rule]
         issuerLevel1Approver     : Party
         bankIssuerLevel2Approver : Party
@@ -239,7 +240,7 @@ template FullyApproved
     content : Loc
   where
     signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver, content.bankOwnerLevel7Approver
-    choice EndLoc : ()
+    {- choice EndLoc : ()
       controller content.issuerLevel1Approver
       do
-        return ()
+        return ()-}

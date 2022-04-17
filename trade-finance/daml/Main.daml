@@ -4,11 +4,12 @@ import Daml.Script
 import Loc.Applicant as A
 import Loc.Model as P
 import Loc.Accountant as Accountant
+import Loc.Loc
 
 test_applicant = do
     -- Parties
-    marques <- allocateParty "Marques"
     grilo <- allocateParty "Grilo"
+    pecasAuto <- allocateParty "Pecas Auto"
     caixa <- allocateParty "Caixa Geral de Depositos"
     shipper <- allocateParty "CTT"
     
@@ -18,87 +19,105 @@ test_applicant = do
         address = "Avenida da Liberdade"
 
     -- Use Case
-    -- marques quer comprar bois ao grilo
+    -- grilo quer comprar bois ao pecasAuto
     {-
         ################### 1. Sales Contract agreement ###################
     -}
-    -- marques quer comprar bois ao grilo por 1000 Euros
-    productCid <- submit marques do 
+    -- grilo quer comprar bois ao pecasAuto por 1000 Euros
+    productCid <- submit grilo do 
         createCmd P.Product with
-                    issuer = marques
-                    owner = grilo
-                    item = "BOI"
+                    issuer = grilo
+                    owner = pecasAuto
+                    item = "Travões"
                     price = Cash with
                             currency = "EUR"
                             amount = 1000.0
 
-    -- marques inicia pedido para comprar
-    applicant <- submit marques do 
+    -- grilo inicia pedido para comprar
+    applicant <- submit grilo do 
         createCmd A.Applicant with
-            issuer = marques
+            issuer = grilo
 
-    -- marques informa grilo dessa intenção de compra
-    proposalCid <- submit marques do 
+    -- grilo informa pecasAuto dessa intenção de compra
+    proposalCid <- submit grilo do 
         exerciseCmd applicant Buy 
-            with owner = grilo
+            with owner = pecasAuto
                  product = productCid
 
-    -- grilo aceita negociar   
-    agreementCid <- submit grilo do exerciseCmd proposalCid Contract
+    -- pecasAuto aceita negociar   
+    agreementCid <- submit pecasAuto do exerciseCmd proposalCid Contract
 
-    -- grilo diz iban para a transferia
+    -- pecasAuto diz iban para a transferia
+    pecasAuto_accountCid <-submit pecasAuto do 
+                createCmd Account 
+                    with
+                        owner = pecasAuto
+                        bank = caixa_bank
+                        number = "PT50155825912812112342342342332234"
+    Some pecasAuto_account <- queryContractId pecasAuto pecasAuto_accountCid  
+    preparationCid <- submit pecasAuto do 
+        exerciseCmd agreementCid Preparation 
+                    with account = pecasAuto_account
+                         shipper
+    -- grilo diz iban para a transferencia
     grilo_accountCid <-submit grilo do 
                 createCmd Account 
                     with
                         owner = grilo
                         bank = caixa_bank
-                        number = "PT50155825912812112342342342332234"
-    Some grilo_account <- queryContractId grilo grilo_accountCid  
-    preparationCid <- submit grilo do 
-        exerciseCmd agreementCid Preparation 
-                    with account = grilo_account
-                         shipper
-    -- marques diz iban para a transferencia
-    marques_accountCid <-submit marques do 
-                createCmd Account 
-                    with
-                        owner = marques
-                        bank = caixa_bank
                         number = "PT50155825912812112342342342332211"
-    Some marques_account <- queryContractId marques marques_accountCid  
+    Some grilo_account <- queryContractId grilo grilo_accountCid  
     -- compra formalizada
-    submit marques do 
+    sale <- submit grilo do 
         exerciseCmd preparationCid Approach 
-                    with account = marques_account
+                    with account = grilo_account
     {-
         ################### 2. Apply for LC ###################
     -}
-    
+    let 
+        rules = [Rule with 
+                        condition = "50% no inicio"
+                        description = "Dar 50% do dinheiro para começar a fazer o envio das pecas"
+                , Rule with 
+                        condition = "Restante 50% apenas na chegada"
+                        description = "Apenas é pago o montate restante na chegada das pecas"
+                ]
+        loc = Loc with
+            sale
+            rules
+            issuerLevel1Approver     = grilo
+            bankIssuerLevel2Approver = caixa_bank.party
+            bankOwnerLevel3Approver  = caixa_bank.party
+            ownerLevel4Approver      = pecasAuto
+            shipLevel5Approver       = shipper
+            bankIssuerLevel6Approver = caixa_bank.party
+            bankOwnerLevel7Approver  = caixa_bank.party
     {-
         ################### 3. Issue LC ###################
     -}
-
+    -- grilo emite a nota de credito com as regras da mesma
+    proposed <- submit grilo do createCmd Proposed with content = loc
+    -- grilo valida a sua intecao
+    grilo_confirmation  <- submit grilo do exerciseCmd proposed Level1Approve
+    bank_issuer_confirmation <- submit caixa do exerciseCmd grilo_confirmation Level2Approve with loc
     {-
         ################### 4. Verifies LC and forwards it to Beneficiary ###################
     -}
-
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation Level3Approve with loc
     {-
         ################### 5. Goods shipped ###################
     -}
-
+    owner_confirmation <- submit pecasAuto do exerciseCmd bank_owner_confirmation Level4Approve with loc
     {-
         ################### 6. Documents submitted per contract ###################
     -}
-
+    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation Level5Approve with loc
     {-
-        ################### 7.  ###################
+        ################### 7. Presentation of Documents ###################
     -}
-
+    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation Level6Approve with loc
     {-
-        ################### 8. Payment Released ###################
+        ################### 8. Payment Released && 9. Release Documents ###################
     -}
-
-    {-
-        ################### 9. Release Documents ###################
-    -}
+    submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
 

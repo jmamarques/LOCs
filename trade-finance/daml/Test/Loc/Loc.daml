@@ -90,8 +90,6 @@ test_loc = do
     bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation Level6Approve with loc
     bank_issuer_confirmation <- submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
     assert(loc.issuerLevel1Approver == marques)
-    -- marques termina loc
-    submit marques do exerciseCmd bank_issuer_confirmation EndLoc
 
     
 test_loc_2 = do 
