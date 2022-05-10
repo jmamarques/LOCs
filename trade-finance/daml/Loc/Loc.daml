@@ -2,12 +2,12 @@ module Loc.Loc where
 
 import Loc.Applicant as A
 
-type Level1ApprovedId = ContractId Level1Approved
-type Level2ApprovedId = ContractId Level2Approved
-type Level3ApprovedId = ContractId Level3Approved
-type Level4ApprovedId = ContractId Level4Approved
-type Level5ApprovedId = ContractId Level5Approved
-type Level6ApprovedId = ContractId Level6Approved
+type BuyerApprovedId = ContractId BuyerApproved
+type BankBuyerApprovedId = ContractId BankBuyerApproved
+type BankSellerApprovedId = ContractId BankSellerApproved
+type SellerApprovedId = ContractId SellerApproved
+type ShipApprovedId = ContractId ShipApproved
+type DocumentationApprovedId = ContractId DocumentationApproved
 type FullyApprovedId  = ContractId FullyApproved
 type RevokeId         = ContractId Revoke
 -- rule
@@ -37,210 +37,210 @@ data Loc = Loc
         sale                     : SaleId
         -- Aonde colocar as rules? nivel do loc ou a nivel do agreement entre comprador e vendedor?
         rules                    : [Rule]
-        issuerLevel1Approver     : Party
-        bankIssuerLevel2Approver : Party
-        bankOwnerLevel3Approver  : Party
-        ownerLevel4Approver      : Party
-        shipLevel5Approver       : Party
-        bankIssuerLevel6Approver : Party
-        bankOwnerLevel7Approver  : Party
+        issuerBuyer     : Party
+        bankBuyer       : Party
+        bankSeller      : Party
+        ownerSeller     : Party
+        shipSeller      : Party
+        bankFinalSeller : Party
+        bankFinalBuyer  : Party
     deriving (Eq, Show)
 -- Proposed created by issuer
 template Proposed
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver 
+    signatory content.issuerBuyer 
 
-    ensure content.bankIssuerLevel6Approver == content.bankIssuerLevel2Approver
-        && content.bankOwnerLevel3Approver == content.bankOwnerLevel7Approver
+    ensure content.bankFinalSeller == content.bankBuyer
+        && content.bankSeller == content.bankFinalBuyer
 
-    choice Level1Approve : Level1ApprovedId
-        controller content.issuerLevel1Approver
+    choice BuyerApprove : BuyerApprovedId
+        controller content.issuerBuyer
         do  
             -- confirm if all levels belong to approved entities
             sale <- fetch content.sale
-            assertMsg "Issuer constraint" (sale.issuer.owner == content.issuerLevel1Approver)
-            assertMsg "Owner constraint" (sale.owner.owner == content.ownerLevel4Approver)
+            assertMsg "Issuer constraint" (sale.issuer.owner == content.issuerBuyer)
+            assertMsg "Owner constraint" (sale.owner.owner == content.ownerSeller)
             -- Bank constraint
-            assertMsg "Bank Owner constraint" (sale.owner.bank.party == content.bankOwnerLevel3Approver)
-            assertMsg "Bank Issuer constraint" (sale.issuer.bank.party == content.bankIssuerLevel2Approver)
+            assertMsg "Bank Owner constraint" (sale.owner.bank.party == content.bankSeller)
+            assertMsg "Bank Issuer constraint" (sale.issuer.bank.party == content.bankBuyer)
             -- Product constraint
             product <- fetch sale.product
-            assertMsg "Product Owner constraint" (product.owner == content.ownerLevel4Approver)
-            assertMsg "Product Issuer constraint" (product.issuer == content.issuerLevel1Approver)
+            assertMsg "Product Owner constraint" (product.owner == content.ownerSeller)
+            assertMsg "Product Issuer constraint" (product.issuer == content.issuerBuyer)
             -- contract constraint
-            assertMsg "Contract Owner constraint" (sale.contract.owner == content.ownerLevel4Approver)
-            assertMsg "Contract Issuer constraint" (sale.contract.issuer == content.issuerLevel1Approver)
+            assertMsg "Contract Owner constraint" (sale.contract.owner == content.ownerSeller)
+            assertMsg "Contract Issuer constraint" (sale.contract.issuer == content.issuerBuyer)
             -- Shipper constraint
-            assertMsg "Shipper constraint" (sale.shipper == content.shipLevel5Approver)
+            assertMsg "Shipper constraint" (sale.shipper == content.shipSeller)
 
-            create Level1Approved 
+            create BuyerApproved 
                 with content
     choice Declined : RevokeId
       with reason: Text
-      controller content.issuerLevel1Approver
+      controller content.issuerBuyer
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.issuerLevel1Approver
+            owner = content.issuerBuyer
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
             
 -- issuer Aprove content on Loc -> Emits Loc for own bank
 -- Issuer aprove
-template Level1Approved
+template BuyerApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver
-    observer content.bankIssuerLevel2Approver
-    choice Level2Approve : Level2ApprovedId
+    signatory content.issuerBuyer
+    observer content.bankBuyer
+    choice BankBuyerApprove : BankBuyerApprovedId
         with loc: Loc
-        controller content.bankIssuerLevel2Approver
+        controller content.bankBuyer
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
-            create Level2Approved 
+            create BankBuyerApproved 
                 with content = loc
-    choice DeclinedLevel1 : RevokeId
+    choice DeclinedBuyer : RevokeId
       with reason: Text
-      controller content.bankIssuerLevel2Approver
+      controller content.bankBuyer
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.bankIssuerLevel2Approver
+            owner = content.bankBuyer
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Issuer approve
-template Level2Approved
+template BankBuyerApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver
-    observer content.bankOwnerLevel3Approver
-    choice Level3Approve : Level3ApprovedId
+    signatory content.issuerBuyer, content.bankBuyer
+    observer content.bankSeller
+    choice BankSellerApprove : BankSellerApprovedId
         with loc: Loc
-        controller content.bankOwnerLevel3Approver
+        controller content.bankSeller
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
-            create Level3Approved 
+            create BankSellerApproved 
                 with content = loc
-    choice DeclinedLevel2 : RevokeId
+    choice DeclinedBankBuyer : RevokeId
       with reason: Text
-      controller content.bankOwnerLevel3Approver
+      controller content.bankSeller
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.bankOwnerLevel3Approver
+            owner = content.bankSeller
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Owner approve
-template Level3Approved
+template BankSellerApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver
-    observer content.ownerLevel4Approver
-    choice Level4Approve : Level4ApprovedId
+    signatory content.issuerBuyer, content.bankBuyer, content.bankSeller
+    observer content.ownerSeller
+    choice SellerApprove : SellerApprovedId
         with loc: Loc
-        controller content.ownerLevel4Approver
+        controller content.ownerSeller
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
-            create Level4Approved 
+            create SellerApproved 
                 with content = loc
-    choice DeclinedLevel3 : RevokeId
+    choice DeclinedBankSeller : RevokeId
       with reason: Text
-      controller content.ownerLevel4Approver
+      controller content.ownerSeller
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.ownerLevel4Approver
+            owner = content.ownerSeller
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Owner approve
-template Level4Approved
+template SellerApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver
-    observer content.shipLevel5Approver
-    choice Level5Approve : Level5ApprovedId
+    signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller
+    observer content.shipSeller
+    choice ShipApprove : ShipApprovedId
         with loc: Loc
-        controller content.shipLevel5Approver
+        controller content.shipSeller
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
-            create Level5Approved 
+            create ShipApproved 
                 with content = loc
-    choice DeclinedLevel4 : RevokeId
+    choice DeclinedSeller : RevokeId
       with reason: Text
-      controller content.shipLevel5Approver
+      controller content.shipSeller
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.shipLevel5Approver
-            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner, content.shipLevel5Approver]
+            owner = content.shipSeller
+            observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner, content.shipSeller]
 -- Ship approve
-template Level5Approved
+template ShipApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver
-    observer content.bankIssuerLevel6Approver
-    choice Level6Approve : Level6ApprovedId
+    signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller
+    observer content.bankFinalSeller
+    choice DocumentationApprove : DocumentationApprovedId
         with loc: Loc
-        controller content.bankIssuerLevel6Approver
+        controller content.bankFinalSeller
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
-            create Level6Approved 
+            create DocumentationApproved 
                 with content = loc
-    choice DeclinedLevel5 : RevokeId
+    choice DeclinedShip : RevokeId
       with reason: Text
-      controller content.bankIssuerLevel6Approver
+      controller content.bankFinalSeller
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.bankIssuerLevel6Approver
+            owner = content.bankFinalSeller
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Owner approve 2nd
-template Level6Approved
+template DocumentationApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver
-    observer content.bankOwnerLevel7Approver
+    signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller, content.bankFinalSeller
+    observer content.bankFinalBuyer
     choice FullyApprove : FullyApprovedId
         with loc: Loc
-        controller content.bankOwnerLevel7Approver
+        controller content.bankFinalBuyer
         do  
             assertMsg "LOC is the same as you approve" (loc == content)
             archive loc.sale
             create FullyApproved 
                 with content = loc
-    choice DeclinedLevel6 : RevokeId
+    choice DeclinedDocumentation : RevokeId
       with reason: Text
-      controller content.bankOwnerLevel7Approver
+      controller content.bankFinalBuyer
       do 
         sale <- fetch content.sale
         create Revoke 
           with
             reason
-            owner = content.bankOwnerLevel7Approver
+            owner = content.bankFinalBuyer
             observers = [sale.owner.bank.party, sale.issuer.bank.party, sale.owner.owner, sale.issuer.owner]
 -- Bank Issuer approve 2nd -> Consensus for each level
 template FullyApproved
   with
     content : Loc
   where
-    signatory content.issuerLevel1Approver, content.bankIssuerLevel2Approver, content.bankOwnerLevel3Approver, content.ownerLevel4Approver, content.shipLevel5Approver, content.bankIssuerLevel6Approver, content.bankOwnerLevel7Approver
+    signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller, content.bankFinalSeller, content.bankFinalBuyer
     {- choice EndLoc : ()
-      controller content.issuerLevel1Approver
+      controller content.issuerBuyer
       do
         return ()-}

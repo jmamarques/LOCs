@@ -85,37 +85,37 @@ test_applicant = do
         loc = Loc with
             sale
             rules
-            issuerLevel1Approver     = grilo
-            bankIssuerLevel2Approver = caixa_bank.party
-            bankOwnerLevel3Approver  = caixa_bank.party
-            ownerLevel4Approver      = pecasAuto
-            shipLevel5Approver       = shipper
-            bankIssuerLevel6Approver = caixa_bank.party
-            bankOwnerLevel7Approver  = caixa_bank.party
+            issuerBuyer     = grilo
+            bankBuyer = caixa_bank.party
+            bankSeller  = caixa_bank.party
+            ownerSeller      = pecasAuto
+            shipSeller       = shipper
+            bankFinalSeller = caixa_bank.party
+            bankFinalBuyer  = caixa_bank.party
     {-
         ################### 3. Issue LC ###################
     -}
     -- grilo emite a nota de credito com as regras da mesma
     proposed <- submit grilo do createCmd Proposed with content = loc
     -- grilo valida a sua intecao
-    grilo_confirmation  <- submit grilo do exerciseCmd proposed Level1Approve
-    bank_issuer_confirmation <- submit caixa do exerciseCmd grilo_confirmation Level2Approve with loc
+    grilo_confirmation  <- submit grilo do exerciseCmd proposed BuyerApprove
+    bank_issuer_confirmation <- submit caixa do exerciseCmd grilo_confirmation BankBuyerApprove with loc
     {-
         ################### 4. Verifies LC and forwards it to Beneficiary ###################
     -}
-    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation Level3Approve with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove with loc
     {-
         ################### 5. Goods shipped ###################
     -}
-    owner_confirmation <- submit pecasAuto do exerciseCmd bank_owner_confirmation Level4Approve with loc
+    owner_confirmation <- submit pecasAuto do exerciseCmd bank_owner_confirmation SellerApprove with loc
     {-
         ################### 6. Documents submitted per contract ###################
     -}
-    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation Level5Approve with loc
+    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with loc
     {-
         ################### 7. Presentation of Documents ###################
     -}
-    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation Level6Approve with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove with loc
     {-
         ################### 8. Payment Released && 9. Release Documents ###################
     -}

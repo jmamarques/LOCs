@@ -69,27 +69,27 @@ test_loc = do
                             condition = "Restante 50% apenas na chegada"
                             description = "Apenas é pago o montate restante na chegada dos bois"
                     ]
-            issuerLevel1Approver     = marques
-            bankIssuerLevel2Approver = caixa_bank.party
-            bankOwnerLevel3Approver  = caixa_bank.party
-            ownerLevel4Approver      = grilo
-            shipLevel5Approver       = shipper
-            bankIssuerLevel6Approver = caixa_bank.party
-            bankOwnerLevel7Approver  = caixa_bank.party
+            issuerBuyer     = marques
+            bankBuyer = caixa_bank.party
+            bankSeller  = caixa_bank.party
+            ownerSeller      = grilo
+            shipSeller       = shipper
+            bankFinalSeller = caixa_bank.party
+            bankFinalBuyer  = caixa_bank.party
 
-    assert(loc.issuerLevel1Approver == marques)
+    assert(loc.issuerBuyer == marques)
 
     -- marques vai criar uma nota de credito (loc) para o seu banco
     proposed <- submit marques do createCmd Proposed with content = loc
     -- marques valida a sua intecao
-    marques_confirmation  <- submit marques do exerciseCmd proposed Level1Approve
-    bank_issuer_confirmation <- submit caixa do exerciseCmd marques_confirmation Level2Approve with loc
-    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation Level3Approve with loc
-    owner_confirmation <- submit grilo do exerciseCmd bank_owner_confirmation Level4Approve with loc
-    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation Level5Approve with loc
-    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation Level6Approve with loc
+    marques_confirmation  <- submit marques do exerciseCmd proposed BuyerApprove
+    bank_issuer_confirmation <- submit caixa do exerciseCmd marques_confirmation BankBuyerApprove with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove with loc
+    owner_confirmation <- submit grilo do exerciseCmd bank_owner_confirmation SellerApprove with loc
+    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove with loc
     bank_issuer_confirmation <- submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
-    assert(loc.issuerLevel1Approver == marques)
+    assert(loc.issuerBuyer == marques)
 
     
 test_loc_2 = do 
@@ -155,13 +155,13 @@ test_loc_2 = do
                             condition = "Restante 50% apenas na chegada"
                             description = "Apenas é pago o montate restante na chegada dos bois"
                     ]
-            issuerLevel1Approver     = marques
-            bankIssuerLevel2Approver = caixa_bank.party
-            bankOwnerLevel3Approver  = caixa_bank.party
-            ownerLevel4Approver      = grilo
-            shipLevel5Approver       = shipper
-            bankIssuerLevel6Approver = caixa_bank.party
-            bankOwnerLevel7Approver  = caixa_bank.party
+            issuerBuyer     = marques
+            bankBuyer = caixa_bank.party
+            bankSeller  = caixa_bank.party
+            ownerSeller      = grilo
+            shipSeller       = shipper
+            bankFinalSeller = caixa_bank.party
+            bankFinalBuyer  = caixa_bank.party
 
     proposed2 <- submit marques do createCmd Proposed with content = loc
     marques_revoke  <- submit marques do exerciseCmd proposed2 Declined with reason = "bad idea"
