@@ -99,25 +99,25 @@ test_applicant = do
     proposed <- submit grilo do createCmd Proposed with content = loc
     -- grilo valida a sua intecao
     grilo_confirmation  <- submit grilo do exerciseCmd proposed BuyerApprove
-    bank_issuer_confirmation <- submit caixa do exerciseCmd grilo_confirmation BankBuyerApprove with loc
+    bank_issuer_confirmation <- submit caixa do exerciseCmd grilo_confirmation BankBuyerApprove
     {-
         ################### 4. Verifies LC and forwards it to Beneficiary ###################
     -}
-    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove
     {-
         ################### 5. Goods shipped ###################
     -}
-    owner_confirmation <- submit pecasAuto do exerciseCmd bank_owner_confirmation SellerApprove with loc
+    owner_confirmation <- submit pecasAuto do exerciseCmd bank_owner_confirmation SellerApprove with receiptSeller = "FC/1295"
     {-
         ################### 6. Documents submitted per contract ###################
     -}
-    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with loc
+    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with receiptShipper = "SH/12354"
     {-
         ################### 7. Presentation of Documents ###################
     -}
-    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove with loc
+    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove
     {-
         ################### 8. Payment Released && 9. Release Documents ###################
     -}
-    submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
+    submit caixa do exerciseCmd bank_owner_confirmation FullyApprove
 

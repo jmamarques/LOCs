@@ -97,12 +97,10 @@ template BuyerApproved
     signatory content.issuerBuyer
     observer content.bankBuyer
     choice BankBuyerApprove : BankBuyerApprovedId
-        with loc: Loc
         controller content.bankBuyer
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
             create BankBuyerApproved 
-                with content = loc
+                with content
     choice DeclinedBuyer : RevokeId
       with reason: Text
       controller content.bankBuyer
@@ -121,12 +119,10 @@ template BankBuyerApproved
     signatory content.issuerBuyer, content.bankBuyer
     observer content.bankSeller
     choice BankSellerApprove : BankSellerApprovedId
-        with loc: Loc
         controller content.bankSeller
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
             create BankSellerApproved 
-                with content = loc
+                with content
     choice DeclinedBankBuyer : RevokeId
       with reason: Text
       controller content.bankSeller
@@ -145,12 +141,12 @@ template BankSellerApproved
     signatory content.issuerBuyer, content.bankBuyer, content.bankSeller
     observer content.ownerSeller
     choice SellerApprove : SellerApprovedId
-        with loc: Loc
+        with receiptSeller: Text
         controller content.ownerSeller
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
             create SellerApproved 
-                with content = loc
+                with content
+                     receiptSeller
     choice DeclinedBankSeller : RevokeId
       with reason: Text
       controller content.ownerSeller
@@ -165,16 +161,18 @@ template BankSellerApproved
 template SellerApproved
   with
     content : Loc
+    receiptSeller: Text
   where
     signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller
     observer content.shipSeller
     choice ShipApprove : ShipApprovedId
-        with loc: Loc
+        with receiptShipper: Text
         controller content.shipSeller
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
             create ShipApproved 
-                with content = loc
+                with content
+                     receiptSeller
+                     receiptShipper
     choice DeclinedSeller : RevokeId
       with reason: Text
       controller content.shipSeller
@@ -189,16 +187,18 @@ template SellerApproved
 template ShipApproved
   with
     content : Loc
+    receiptSeller: Text
+    receiptShipper: Text
   where
     signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller
     observer content.bankFinalSeller
     choice DocumentationApprove : DocumentationApprovedId
-        with loc: Loc
         controller content.bankFinalSeller
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
             create DocumentationApproved 
-                with content = loc
+                with content
+                     receiptSeller
+                     receiptShipper
     choice DeclinedShip : RevokeId
       with reason: Text
       controller content.bankFinalSeller
@@ -213,17 +213,19 @@ template ShipApproved
 template DocumentationApproved
   with
     content : Loc
+    receiptSeller: Text
+    receiptShipper: Text
   where
     signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller, content.bankFinalSeller
     observer content.bankFinalBuyer
     choice FullyApprove : FullyApprovedId
-        with loc: Loc
         controller content.bankFinalBuyer
         do  
-            assertMsg "LOC is the same as you approve" (loc == content)
-            archive loc.sale
-            create FullyApproved 
-                with content = loc
+            archive content.sale
+            create FullyApproved
+                with content
+                     receiptSeller
+                     receiptShipper
     choice DeclinedDocumentation : RevokeId
       with reason: Text
       controller content.bankFinalBuyer
@@ -238,6 +240,8 @@ template DocumentationApproved
 template FullyApproved
   with
     content : Loc
+    receiptSeller: Text
+    receiptShipper: Text
   where
     signatory content.issuerBuyer, content.bankBuyer, content.bankSeller, content.ownerSeller, content.shipSeller, content.bankFinalSeller, content.bankFinalBuyer
     {- choice EndLoc : ()

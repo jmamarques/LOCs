@@ -60,140 +60,147 @@ label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
 <tr><td align="left">contract.product</td></tr> 
 <tr><td align="left">shipper</td></tr> 
 </table>>;color=blue
-}subgraph cluster_FullyApproved{
+}subgraph cluster_BankBuyerApproved{
 n14[label=Create][color=green]; 
 n15[label=Archive][color=red]; 
+n16[label=BankSellerApprove][color=red]; 
+n17[label=DeclinedBankBuyer][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>BankBuyerApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+</table>>;color=blue
+}subgraph cluster_BankSellerApproved{
+n18[label=Create][color=green]; 
+n19[label=Archive][color=red]; 
+n20[label=SellerApprove][color=red]; 
+n21[label=DeclinedBankSeller][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>BankSellerApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+</table>>;color=blue
+}subgraph cluster_BuyerApproved{
+n22[label=Create][color=green]; 
+n23[label=Archive][color=red]; 
+n24[label=BankBuyerApprove][color=red]; 
+n25[label=DeclinedBuyer][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>BuyerApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+</table>>;color=blue
+}subgraph cluster_DocumentationApproved{
+n26[label=Create][color=green]; 
+n27[label=Archive][color=red]; 
+n28[label=FullyApprove][color=red]; 
+n29[label=DeclinedDocumentation][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>DocumentationApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+<tr><td align="left">receiptSeller</td></tr> 
+<tr><td align="left">receiptShipper</td></tr> 
+</table>>;color=blue
+}subgraph cluster_FullyApproved{
+n30[label=Create][color=green]; 
+n31[label=Archive][color=red]; 
 label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
 <tr><td align="center"><b>FullyApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
 <tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level1Approved{
-n16[label=Create][color=green]; 
-n17[label=Archive][color=red]; 
-n18[label=Level2Approve][color=red]; 
-n19[label=DeclinedLevel1][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level1Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level2Approved{
-n20[label=Create][color=green]; 
-n21[label=Archive][color=red]; 
-n22[label=Level3Approve][color=red]; 
-n23[label=DeclinedLevel2][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level2Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level3Approved{
-n24[label=Create][color=green]; 
-n25[label=Archive][color=red]; 
-n26[label=Level4Approve][color=red]; 
-n27[label=DeclinedLevel3][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level3Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level4Approved{
-n28[label=Create][color=green]; 
-n29[label=Archive][color=red]; 
-n30[label=Level5Approve][color=red]; 
-n31[label=DeclinedLevel4][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level4Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level5Approved{
-n32[label=Create][color=green]; 
-n33[label=Archive][color=red]; 
-n34[label=Level6Approve][color=red]; 
-n35[label=DeclinedLevel5][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level5Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
-</table>>;color=blue
-}subgraph cluster_Level6Approved{
-n36[label=Create][color=green]; 
-n37[label=Archive][color=red]; 
-n38[label=FullyApprove][color=red]; 
-n39[label=DeclinedLevel6][color=red]; 
-label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
-<tr><td align="center"><b>Level6Approved</b></td></tr><tr><td align="left">content.sale</td></tr> 
-<tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+<tr><td align="left">receiptSeller</td></tr> 
+<tr><td align="left">receiptShipper</td></tr> 
 </table>>;color=blue
 }subgraph cluster_Proposed{
-n40[label=Create][color=green]; 
-n41[label=Archive][color=red]; 
-n42[label=Level1Approve][color=red]; 
-n43[label=Declined][color=red]; 
+n32[label=Create][color=green]; 
+n33[label=Archive][color=red]; 
+n34[label=BuyerApprove][color=red]; 
+n35[label=Declined][color=red]; 
 label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
 <tr><td align="center"><b>Proposed</b></td></tr><tr><td align="left">content.sale</td></tr> 
 <tr><td align="left">content.rules</td></tr> 
-<tr><td align="left">content.issuerLevel1Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel2Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel3Approver</td></tr> 
-<tr><td align="left">content.ownerLevel4Approver</td></tr> 
-<tr><td align="left">content.shipLevel5Approver</td></tr> 
-<tr><td align="left">content.bankIssuerLevel6Approver</td></tr> 
-<tr><td align="left">content.bankOwnerLevel7Approver</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
 </table>>;color=blue
 }subgraph cluster_Revoke{
-n44[label=Create][color=green]; 
-n45[label=Archive][color=red]; 
-n46[label=Disclose][color=red]; 
+n36[label=Create][color=green]; 
+n37[label=Archive][color=red]; 
+n38[label=Disclose][color=red]; 
 label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
 <tr><td align="center"><b>Revoke</b></td></tr><tr><td align="left">owner</td></tr> 
 <tr><td align="left">reason</td></tr> 
 <tr><td align="left">observers</td></tr> 
+</table>>;color=blue
+}subgraph cluster_SellerApproved{
+n39[label=Create][color=green]; 
+n40[label=Archive][color=red]; 
+n41[label=ShipApprove][color=red]; 
+n42[label=DeclinedSeller][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>SellerApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+<tr><td align="left">receiptSeller</td></tr> 
+</table>>;color=blue
+}subgraph cluster_ShipApproved{
+n43[label=Create][color=green]; 
+n44[label=Archive][color=red]; 
+n45[label=DocumentationApprove][color=red]; 
+n46[label=DeclinedShip][color=red]; 
+label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
+<tr><td align="center"><b>ShipApproved</b></td></tr><tr><td align="left">content.sale</td></tr> 
+<tr><td align="left">content.rules</td></tr> 
+<tr><td align="left">content.issuerBuyer</td></tr> 
+<tr><td align="left">content.bankBuyer</td></tr> 
+<tr><td align="left">content.bankSeller</td></tr> 
+<tr><td align="left">content.ownerSeller</td></tr> 
+<tr><td align="left">content.shipSeller</td></tr> 
+<tr><td align="left">content.bankFinalSeller</td></tr> 
+<tr><td align="left">content.bankFinalBuyer</td></tr> 
+<tr><td align="left">receiptSeller</td></tr> 
+<tr><td align="left">receiptShipper</td></tr> 
 </table>>;color=blue
 }subgraph cluster_Product{
 n47[label=Create][color=green]; 
@@ -219,21 +226,21 @@ label=<<table align = "left" border="0" cellborder="0" cellspacing="1">
 n5->n9
 n8->n12
 n11->n0
-n18->n20
-n19->n44
-n22->n24
-n23->n44
-n26->n28
-n27->n44
-n30->n32
-n31->n44
-n34->n36
-n35->n44
-n38->n14
-n38->n13
-n39->n44
-n42->n16
-n43->n44
-n46->n44
+n16->n18
+n17->n36
+n20->n39
+n21->n36
+n24->n14
+n25->n36
+n28->n30
+n28->n13
+n29->n36
+n34->n22
+n35->n36
+n38->n36
+n41->n43
+n42->n36
+n45->n26
+n46->n36
 
 }

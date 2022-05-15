@@ -83,12 +83,12 @@ test_loc = do
     proposed <- submit marques do createCmd Proposed with content = loc
     -- marques valida a sua intecao
     marques_confirmation  <- submit marques do exerciseCmd proposed BuyerApprove
-    bank_issuer_confirmation <- submit caixa do exerciseCmd marques_confirmation BankBuyerApprove with loc
-    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove with loc
-    owner_confirmation <- submit grilo do exerciseCmd bank_owner_confirmation SellerApprove with loc
-    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with loc
-    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove with loc
-    bank_issuer_confirmation <- submit caixa do exerciseCmd bank_owner_confirmation FullyApprove with loc
+    bank_issuer_confirmation <- submit caixa do exerciseCmd marques_confirmation BankBuyerApprove
+    bank_owner_confirmation <- submit caixa do exerciseCmd bank_issuer_confirmation BankSellerApprove
+    owner_confirmation <- submit grilo do exerciseCmd bank_owner_confirmation SellerApprove with receiptSeller = "FC/1295"
+    shipper_confirmation <- submit shipper do exerciseCmd owner_confirmation ShipApprove with receiptShipper = "SH/12354"
+    bank_owner_confirmation <- submit caixa do exerciseCmd shipper_confirmation DocumentationApprove
+    bank_issuer_confirmation <- submit caixa do exerciseCmd bank_owner_confirmation FullyApprove
     assert(loc.issuerBuyer == marques)
 
     
