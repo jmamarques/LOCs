@@ -37,3 +37,6 @@ dot -Tpng trade-finance.dot -o trade-finance.png
 3- Deployments and upload dar file
 
 4- After that you can use freely the ledger on Live Data
+
+### Structure
+![Daml / Hub](./trade-finance.png)
