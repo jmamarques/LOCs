@@ -52,8 +52,8 @@ template Proposed
   where
     signatory content.issuerBuyer 
 
-    ensure content.bankFinalSeller == content.bankBuyer
-        && content.bankSeller == content.bankFinalBuyer
+    ensure content.bankFinalSeller == content.bankSeller
+        && content.bankFinalBuyer == content.bankBuyer
 
     choice BuyerApprove : BuyerApprovedId
         controller content.issuerBuyer
